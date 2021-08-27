@@ -5,12 +5,21 @@ from account.decorators import check_contest_permission
 from ..models import ProblemTag, Problem, ProblemRuleType
 from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer
 from contest.models import ContestRuleType
-
+import logging
+logger = logging.getLogger(__name__)
 
 class ProblemTagAPI(APIView):
+    logger.debug('-1 debug ProblemTagAPI')
+    logger.info('-1 info ProblemTagAPI')
+    # logger.error('-1 error ProblemTagAPI')
+    print('-1 print ProblemTagAPI')
     def get(self, request):
         qs = ProblemTag.objects
         keyword = request.GET.get("keyword")
+        logger.debug('0 debug')
+        logger.info('0 info')
+        # logger.error('0 error')
+        print('0 print')
         if keyword:
             qs = ProblemTag.objects.filter(name__icontains=keyword)
         tags = qs.annotate(problem_count=Count("problem")).filter(problem_count__gt=0)
@@ -29,12 +38,20 @@ class PickOneAPI(APIView):
 class ProblemAPI(APIView):
     @staticmethod
     def _add_problem_status(request, queryset_values):
+        logger.debug('1 debug add_problem_status')
+        # logger.info('1 info add_problem_status')
+        # logger.error('1 error add_problem_status')
+        print('1 print add_problem_status')
         if request.user.is_authenticated:
             profile = request.user.userprofile
             acm_problems_status = profile.acm_problems_status.get("problems", {})
             oi_problems_status = profile.oi_problems_status.get("problems", {})
             # paginate data
             results = queryset_values.get("results")
+            logger.debug('2 debug')
+            # logger.info('2 info')
+            # logger.error('2 error')
+            print('2 print')
             if results is not None:
                 problems = results
             else:
@@ -47,12 +64,31 @@ class ProblemAPI(APIView):
 
     def get(self, request):
         # 问题详情页
+        logger.debug('3 debug get')
+        # logger.info('3 info get')
+        # logger.error('3 error get')
+        print('3 print get')
+        logger.debug('=====request=====')
+        logger.debug(request)
         problem_id = request.GET.get("problem_id")
+        logger.debug('=====problem_id=====')
+        logger.debug(problem_id)
         if problem_id:
+            logger.debug('4 debug')
+            # logger.info('4 info')
+            # logger.error('4 error')
+            print('4 print')
             try:
                 problem = Problem.objects.select_related("created_by") \
                     .get(_id=problem_id, contest_id__isnull=True, visible=True)
+                logger.debug('=====problem=====')
+                logger.debug(type(problem))
+                problem_data2 = ProblemSerializer(problem)
                 problem_data = ProblemSerializer(problem).data
+                logger.debug('=====problem_data2=====')
+                logger.debug(problem_data2)
+                logger.debug('=====problem_data=====')
+                logger.debug(problem_data)
                 self._add_problem_status(request, problem_data)
                 return self.success(problem_data)
             except Problem.DoesNotExist:
@@ -80,6 +116,10 @@ class ProblemAPI(APIView):
         # 根据profile 为做过的题目添加标记
         data = self.paginate_data(request, problems, ProblemSerializer)
         self._add_problem_status(request, data)
+        logger.debug('5 debug')
+        # logger.info('5 info')
+        # logger.error('5 error')
+        print('5 print')
         return self.success(data)
 
 

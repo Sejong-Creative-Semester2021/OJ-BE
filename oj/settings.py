@@ -20,8 +20,8 @@ if production_env:
 else:
     from .dev_settings import *
 
-with open(os.path.join(DATA_DIR, "config", "secret.key"), "r") as f:
-    SECRET_KEY = f.read()
+# with open(os.path.join(DATA_DIR, "config", "secret.key"), "r") as f:
+SECRET_KEY = 'asdfzxcvqwer'
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -162,12 +162,12 @@ LOGGING = {
    'loggers': {
        'django.request': {
            'handlers': LOGGING_HANDLERS,
-           'level': 'ERROR',
+           'level': 'DEBUG',
            'propagate': True,
        },
        'django.db.backends': {
            'handlers': LOGGING_HANDLERS,
-           'level': 'ERROR',
+           'level': 'DEBUG',
            'propagate': True,
        },
         'dramatiq': {
@@ -177,7 +177,7 @@ LOGGING = {
         },
        '': {
            'handlers': LOGGING_HANDLERS,
-           'level': 'WARNING',
+           'level': 'DEBUG',
            'propagate': True,
        }
    },

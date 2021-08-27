@@ -13,6 +13,8 @@ django.setup()
 from django.conf import settings
 from account.models import User, UserProfile, AdminType, ProblemPermission
 from problem.models import Problem, ProblemTag, ProblemDifficulty, ProblemRuleType
+import logging
+logger = logging.getLogger(__name__)
 
 admin_type_map = {
     0: AdminType.REGULAR_USER,
@@ -137,6 +139,10 @@ def import_tags():
 
 
 def import_problems():
+    logger.debug('6 debug import_problems')
+    logger.info('6 info import_problems')
+    # logger.error('6 error import_problems')
+    print('6 print import_problems')
     i = 0
     print("\nFind %d problems in old data" % len(problems))
     prefix = set_problem_display_id_prefix()

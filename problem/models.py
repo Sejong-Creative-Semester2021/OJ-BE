@@ -50,7 +50,7 @@ class Problem(models.Model):
     test_case_id = models.TextField()
     # [{"input_name": "1.in", "output_name": "1.out", "score": 0}]
     test_case_score = JSONField()
-    hint = RichTextField(null=True)
+    testhint = RichTextField(null=True)
     languages = JSONField()
     template = JSONField()
     create_time = models.DateTimeField(auto_now_add=True)
@@ -83,7 +83,7 @@ class Problem(models.Model):
     share_submission = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "problem"
+        db_table = "AIproblem"
         unique_together = (("_id", "contest"),)
         ordering = ("create_time",)
 
