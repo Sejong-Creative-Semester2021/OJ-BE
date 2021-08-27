@@ -5,6 +5,7 @@ urlpatterns = [
     url(r"^api/admin/", include("account.urls.admin")),
     url(r"^api/", include("announcement.urls.oj")),
     url(r"^api/admin/", include("announcement.urls.admin")),
+    url(r"^api/admin/", include("faq.urls.admin")),
     url(r"^api/", include("conf.urls.oj")),
     url(r"^api/admin/", include("conf.urls.admin")),
     url(r"^api/", include("problem.urls.oj")),
@@ -14,4 +15,5 @@ urlpatterns = [
     url(r"^api/", include("submission.urls.oj")),
     url(r"^api/admin/", include("submission.urls.admin")),
     url(r"^api/admin/", include("utils.urls")),
+    url(r"^api/admin/", include("recruit.urls.admin")),
 ]
