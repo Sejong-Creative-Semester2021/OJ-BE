@@ -141,7 +141,7 @@ class JudgeDispatcher(DispatcherBase):
         data = {
             "language_config": sub_config["config"],
             "src": code,
-            "max_cpu_time": self.problem.time_limit,
+            "max_cpu_time": False,
             "max_memory": 1024 * 1024 * self.problem.memory_limit,
             "test_case_id": self.problem.test_case_id,
             "output": False,
