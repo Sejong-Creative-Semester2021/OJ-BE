@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
-from ..views.oj import AnnouncementAPI
+from ..views.oj import FAQAPI
 
 urlpatterns = [
-    url(r"^announcement/?$", AnnouncementAPI.as_view(), name="announcement_api"),
+    url(r"^faq/?$", FAQAPI.as_view(), name="faq_api"),
 ]

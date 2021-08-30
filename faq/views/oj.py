@@ -1,10 +1,15 @@
 from utils.api import APIView
 
-from announcement.models import Announcement
-from announcement.serializers import AnnouncementSerializer
+from faq.models import FAQ
+from faq.serializers import FAQSerializer
+
+import logging
+logger=logging.getLogger(__name__)
 
 
-class AnnouncementAPI(APIView):
+class FAQAPI(APIView):
     def get(self, request):
-        announcements = Announcement.objects.filter(visible=True)
-        return self.success(self.paginate_data(request, announcements, AnnouncementSerializer))
+        logger.info('faq enter!')
+        faqs = FAQ.objects.filter(visible=True)
+        logger.debug('faq load success!')
+        return self.success(self.paginate_data(request, faqs, FAQSerializer))
