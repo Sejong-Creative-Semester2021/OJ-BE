@@ -20,7 +20,8 @@ class AnnouncementAdminAPI(APIView):
         announcement = Announcement.objects.create(title=data["title"],
                                                    content=data["content"],
                                                    created_by=request.user,
-                                                   visible=data["visible"])
+                                                   visible=data["visible"],
+                                                   important=data["important"])
         return self.success(AnnouncementSerializer(announcement).data)
 
     @validate_serializer(EditAnnouncementSerializer)
