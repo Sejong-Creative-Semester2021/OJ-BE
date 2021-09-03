@@ -11,7 +11,7 @@ class AIProblemTag(models.Model):
     name = models.TextField()
 
     class Meta:
-        db_table = "ai_problem_tag"
+        db_table = "ai_contest_tag"
 
 
 class AIProblemRuleType(Choices):
@@ -46,6 +46,7 @@ class AIProblem(models.Model):
     summary_description = RichTextField()
     rule_description = RichTextField()
     schedule_description = RichTextField(null=True)
+    start_time = models.DateTimeField(null=True)
     # [{input: "test", output: "123"}, {input: "test123", output: "456"}]
     samples = JSONField()
     test_case_id = models.TextField()
@@ -84,7 +85,7 @@ class AIProblem(models.Model):
     share_submission = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "ai_problem"
+        db_table = "ai_contest"
         unique_together = (("_id", "contest"),)
         ordering = ("create_time",)
 

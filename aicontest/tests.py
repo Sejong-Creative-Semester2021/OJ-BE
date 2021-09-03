@@ -18,7 +18,7 @@ from .views.admin import TestCaseAPI
 from .utils import parse_problem_template
 
 DEFAULT_PROBLEM_DATA = {"_id": "A-110", "title": "test", "description": "<p>test</p>", "summary_description": "test",
-                        "rule_description": "test", "schedule_description": "test", "memory_limit": 256, "difficulty": "Low",
+                        "rule_description": "test", "schedule_description": "test", "start_time": "test", "memory_limit": 256, "difficulty": "Low",
                         "visible": True, "tags": ["test"], "languages": ["C", "C++", "Java", "Python2"], "template": {},
                         "samples": [{"input": "test", "output": "test"}], "spj": False, "spj_language": "C",
                         "spj_code": "", "spj_compile_ok": True, "test_case_id": "499b26290cc7994e0b497212e842ea85",
