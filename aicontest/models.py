@@ -7,34 +7,34 @@ from utils.models import RichTextField
 from utils.constants import Choices
 
 
-class ProblemTag(models.Model):
+class AIProblemTag(models.Model):
     name = models.TextField()
 
     class Meta:
-        db_table = "problem_tag"
+        db_table = "ai_problem_tag"
 
 
-class ProblemRuleType(Choices):
+class AIProblemRuleType(Choices):
     ACM = "ACM"
     OI = "OI"
 
 
-class ProblemDifficulty(object):
+class AIProblemDifficulty(object):
     High = "High"
     Mid = "Mid"
     Low = "Low"
 
 
-class ProblemIOMode(Choices):
+class AIProblemIOMode(Choices):
     standard = "Standard IO"
     file = "File IO"
 
 
 def _default_io_mode():
-    return {"io_mode": ProblemIOMode.standard, "input": "input.txt", "output": "output.txt"}
+    return {"io_mode": AIProblemIOMode.standard, "input": "input.txt", "output": "output.txt"}
 
 
-class Problem(models.Model):
+class AIProblem(models.Model):
     # display ID
     _id = models.TextField(db_index=True)
     contest = models.ForeignKey(Contest, null=True, on_delete=models.CASCADE)
@@ -73,7 +73,7 @@ class Problem(models.Model):
     rule_type = models.TextField()
     visible = models.BooleanField(default=True)
     difficulty = models.TextField()
-    tags = models.ManyToManyField(ProblemTag)
+    tags = models.ManyToManyField(AIProblemTag)
     source = models.TextField(null=True)
     # for OI mode
     total_score = models.IntegerField(default=0)
@@ -84,7 +84,7 @@ class Problem(models.Model):
     share_submission = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "problem"
+        db_table = "ai_problem"
         unique_together = (("_id", "contest"),)
         ordering = ("create_time",)
 

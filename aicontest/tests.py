@@ -9,8 +9,8 @@ from django.conf import settings
 
 from utils.api.tests import APITestCase
 
-from .models import ProblemTag, ProblemIOMode
-from .models import Problem, ProblemRuleType
+from .models import AIProblemTag, AIProblemIOMode
+from .models import AIProblem, AIProblemRuleType
 from contest.models import Contest
 from contest.tests import DEFAULT_CONTEST_DATA
 
@@ -25,7 +25,7 @@ DEFAULT_PROBLEM_DATA = {"_id": "A-110", "title": "test", "description": "<p>test
                         "test_case_score": [{"output_name": "1.out", "input_name": "1.in", "output_size": 0,
                                              "stripped_output_md5": "d41d8cd98f00b204e9800998ecf8427e",
                                              "input_size": 0, "score": 0}],
-                        "io_mode": {"io_mode": ProblemIOMode.standard, "input": "input.txt", "output": "output.txt"},
+                        "io_mode": {"io_mode": AIProblemIOMode.standard, "input": "input.txt", "output": "output.txt"},
                         "share_submission": False,
                         "rule_type": "ACM", "testhint": "<p>test</p>", "source": "test"}
 
@@ -42,7 +42,7 @@ class ProblemCreateTestBase(APITestCase):
         else:
             data["spj_language"] = None
             data["spj_code"] = None
-        if data["rule_type"] == ProblemRuleType.OI:
+        if data["rule_type"] == AIProblemRuleType.OI:
             total_score = 0
             for item in data["test_case_score"]:
                 if item["score"] <= 0:
@@ -55,21 +55,21 @@ class ProblemCreateTestBase(APITestCase):
 
         data["languages"] = list(data["languages"])
 
-        problem = Problem.objects.create(**data)
+        problem = AIProblem.objects.create(**data)
 
         for item in tags:
             try:
-                tag = ProblemTag.objects.get(name=item)
-            except ProblemTag.DoesNotExist:
-                tag = ProblemTag.objects.create(name=item)
+                tag = AIProblemTag.objects.get(name=item)
+            except AIProblemTag.DoesNotExist:
+                tag = AIProblemTag.objects.create(name=item)
             problem.tags.add(tag)
         return problem
 
 
 class ProblemTagListAPITest(APITestCase):
     def test_get_tag_list(self):
-        ProblemTag.objects.create(name="name1")
-        ProblemTag.objects.create(name="name2")
+        AIProblemTag.objects.create(name="name1")
+        AIProblemTag.objects.create(name="name2")
         resp = self.client.get(self.reverse("problem_tag_list_api"))
         self.assertSuccess(resp)
 
@@ -279,8 +279,8 @@ class AddProblemFromPublicProblemAPITest(ProblemCreateTestBase):
     def test_add_contest_problem(self):
         resp = self.client.post(self.url, data=self.data)
         self.assertSuccess(resp)
-        self.assertTrue(Problem.objects.all().exists())
-        self.assertTrue(Problem.objects.filter(contest_id=self.contest["id"]).exists())
+        self.assertTrue(AIProblem.objects.all().exists())
+        self.assertTrue(AIProblem.objects.filter(contest_id=self.contest["id"]).exists())
 
 
 class ParseProblemTemplateTest(APITestCase):

@@ -21,7 +21,7 @@ from utils.api import APIView, CSRFExemptAPIView, validate_serializer, APIError
 from utils.constants import Difficulty
 from utils.shortcuts import rand_str, natural_sort_key
 from utils.tasks import delete_files
-from ..models import Problem, ProblemRuleType, ProblemTag
+from ..models import AIProblem, AIProblemRuleType, AIProblemTag
 from ..serializers import (CreateContestProblemSerializer, CompileSPJSerializer,
                            CreateProblemSerializer, EditProblemSerializer, EditContestProblemSerializer,
                            ProblemAdminSerializer, TestCaseUploadForm, ContestProblemMakePublicSerializer,
@@ -30,6 +30,8 @@ from ..serializers import (CreateContestProblemSerializer, CompileSPJSerializer,
                            FPSProblemSerializer)
 from ..utils import TEMPLATE_BASE, build_problem_template
 
+import logging
+logger=logging.getLogger(__name__)
 
 class TestCaseZipProcessor(object):
     def process_zip(self, uploaded_zip_file, spj, dir=""):
@@ -119,8 +121,8 @@ class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
         if not problem_id:
             return self.error("Parameter error, problem_id is required")
         try:
-            problem = Problem.objects.get(id=problem_id)
-        except Problem.DoesNotExist:
+            problem = AIProblem.objects.get(id=problem_id)
+        except AIProblem.DoesNotExist:
             return self.error("Problem does not exists")
 
         if problem.contest:
@@ -185,7 +187,7 @@ class ProblemBase(APIView):
         else:
             data["spj_language"] = None
             data["spj_code"] = None
-        if data["rule_type"] == ProblemRuleType.OI:
+        if data["rule_type"] == AIProblemRuleType.OI:
             total_score = 0
             for item in data["test_case_score"]:
                 if item["score"] <= 0:
@@ -204,7 +206,7 @@ class ProblemAPI(ProblemBase):
         _id = data["_id"]
         if not _id:
             return self.error("Display ID is required")
-        if Problem.objects.filter(_id=_id, contest_id__isnull=True).exists():
+        if AIProblem.objects.filter(_id=_id, contest_id__isnull=True).exists():
             return self.error("Display ID already exists")
 
         error_info = self.common_checks(request)
@@ -214,13 +216,13 @@ class ProblemAPI(ProblemBase):
         # todo check filename and score info
         tags = data.pop("tags")
         data["created_by"] = request.user
-        problem = Problem.objects.create(**data)
+        problem = AIProblem.objects.create(**data)
 
         for item in tags:
             try:
-                tag = ProblemTag.objects.get(name=item)
-            except ProblemTag.DoesNotExist:
-                tag = ProblemTag.objects.create(name=item)
+                tag = AIProblemTag.objects.get(name=item)
+            except AIProblemTag.DoesNotExist:
+                tag = AIProblemTag.objects.create(name=item)
             problem.tags.add(tag)
         return self.success(ProblemAdminSerializer(problem).data)
 
@@ -231,15 +233,15 @@ class ProblemAPI(ProblemBase):
         user = request.user
         if problem_id:
             try:
-                problem = Problem.objects.get(id=problem_id)
+                problem = AIProblem.objects.get(id=problem_id)
                 ensure_created_by(problem, request.user)
                 return self.success(ProblemAdminSerializer(problem).data)
-            except Problem.DoesNotExist:
+            except AIProblem.DoesNotExist:
                 return self.error("Problem does not exist")
 
-        problems = Problem.objects.filter(contest_id__isnull=True).order_by("-create_time")
+        problems = AIProblem.objects.filter(contest_id__isnull=True).order_by("-create_time")
         if rule_type:
-            if rule_type not in ProblemRuleType.choices():
+            if rule_type not in AIProblemRuleType.choices():
                 return self.error("Invalid rule_type")
             else:
                 problems = problems.filter(rule_type=rule_type)
@@ -258,15 +260,15 @@ class ProblemAPI(ProblemBase):
         problem_id = data.pop("id")
 
         try:
-            problem = Problem.objects.get(id=problem_id)
+            problem = AIProblem.objects.get(id=problem_id)
             ensure_created_by(problem, request.user)
-        except Problem.DoesNotExist:
+        except AIProblem.DoesNotExist:
             return self.error("Problem does not exist")
 
         _id = data["_id"]
         if not _id:
             return self.error("Display ID is required")
-        if Problem.objects.exclude(id=problem_id).filter(_id=_id, contest_id__isnull=True).exists():
+        if AIProblem.objects.exclude(id=problem_id).filter(_id=_id, contest_id__isnull=True).exists():
             return self.error("Display ID already exists")
 
         error_info = self.common_checks(request)
@@ -283,9 +285,9 @@ class ProblemAPI(ProblemBase):
         problem.tags.remove(*problem.tags.all())
         for tag in tags:
             try:
-                tag = ProblemTag.objects.get(name=tag)
-            except ProblemTag.DoesNotExist:
-                tag = ProblemTag.objects.create(name=tag)
+                tag = AIProblemTag.objects.get(name=tag)
+            except AIProblemTag.DoesNotExist:
+                tag = AIProblemTag.objects.create(name=tag)
             problem.tags.add(tag)
 
         return self.success()
@@ -296,8 +298,8 @@ class ProblemAPI(ProblemBase):
         if not id:
             return self.error("Invalid parameter, id is required")
         try:
-            problem = Problem.objects.get(id=id, contest_id__isnull=True)
-        except Problem.DoesNotExist:
+            problem = AIProblem.objects.get(id=id, contest_id__isnull=True)
+        except AIProblem.DoesNotExist:
             return self.error("Problem does not exists")
         ensure_created_by(problem, request.user)
         # d = os.path.join(settings.TEST_CASE_DIR, problem.test_case_id)
@@ -324,7 +326,7 @@ class ContestProblemAPI(ProblemBase):
         if not _id:
             return self.error("Display ID is required")
 
-        if Problem.objects.filter(_id=_id, contest=contest).exists():
+        if AIProblem.objects.filter(_id=_id, contest=contest).exists():
             return self.error("Duplicate Display id")
 
         error_info = self.common_checks(request)
@@ -335,13 +337,13 @@ class ContestProblemAPI(ProblemBase):
         data["contest"] = contest
         tags = data.pop("tags")
         data["created_by"] = request.user
-        problem = Problem.objects.create(**data)
+        problem = AIProblem.objects.create(**data)
 
         for item in tags:
             try:
-                tag = ProblemTag.objects.get(name=item)
-            except ProblemTag.DoesNotExist:
-                tag = ProblemTag.objects.create(name=item)
+                tag = AIProblemTag.objects.get(name=item)
+            except AIProblemTag.DoesNotExist:
+                tag = AIProblemTag.objects.create(name=item)
             problem.tags.add(tag)
         return self.success(ProblemAdminSerializer(problem).data)
 
@@ -351,9 +353,9 @@ class ContestProblemAPI(ProblemBase):
         user = request.user
         if problem_id:
             try:
-                problem = Problem.objects.get(id=problem_id)
+                problem = AIProblem.objects.get(id=problem_id)
                 ensure_created_by(problem.contest, user)
-            except Problem.DoesNotExist:
+            except AIProblem.DoesNotExist:
                 return self.error("Problem does not exist")
             return self.success(ProblemAdminSerializer(problem).data)
 
@@ -364,7 +366,7 @@ class ContestProblemAPI(ProblemBase):
             ensure_created_by(contest, user)
         except Contest.DoesNotExist:
             return self.error("Contest does not exist")
-        problems = Problem.objects.filter(contest=contest).order_by("-create_time")
+        problems = AIProblem.objects.filter(contest=contest).order_by("-create_time")
         if user.is_admin():
             problems = problems.filter(contest__created_by=user)
         keyword = request.GET.get("keyword")
@@ -389,14 +391,14 @@ class ContestProblemAPI(ProblemBase):
         problem_id = data.pop("id")
 
         try:
-            problem = Problem.objects.get(id=problem_id, contest=contest)
-        except Problem.DoesNotExist:
+            problem = AIProblem.objects.get(id=problem_id, contest=contest)
+        except AIProblem.DoesNotExist:
             return self.error("Problem does not exist")
 
         _id = data["_id"]
         if not _id:
             return self.error("Display ID is required")
-        if Problem.objects.exclude(id=problem_id).filter(_id=_id, contest=contest).exists():
+        if AIProblem.objects.exclude(id=problem_id).filter(_id=_id, contest=contest).exists():
             return self.error("Display ID already exists")
 
         error_info = self.common_checks(request)
@@ -413,9 +415,9 @@ class ContestProblemAPI(ProblemBase):
         problem.tags.remove(*problem.tags.all())
         for tag in tags:
             try:
-                tag = ProblemTag.objects.get(name=tag)
-            except ProblemTag.DoesNotExist:
-                tag = ProblemTag.objects.create(name=tag)
+                tag = AIProblemTag.objects.get(name=tag)
+            except AIProblemTag.DoesNotExist:
+                tag = AIProblemTag.objects.create(name=tag)
             problem.tags.add(tag)
         return self.success()
 
@@ -424,8 +426,8 @@ class ContestProblemAPI(ProblemBase):
         if not id:
             return self.error("Invalid parameter, id is required")
         try:
-            problem = Problem.objects.get(id=id, contest_id__isnull=False)
-        except Problem.DoesNotExist:
+            problem = AIProblem.objects.get(id=id, contest_id__isnull=False)
+        except AIProblem.DoesNotExist:
             return self.error("Problem does not exists")
         ensure_created_by(problem.contest, request.user)
         if Submission.objects.filter(problem=problem).exists():
@@ -443,12 +445,12 @@ class MakeContestProblemPublicAPIView(APIView):
     def post(self, request):
         data = request.data
         display_id = data.get("display_id")
-        if Problem.objects.filter(_id=display_id, contest_id__isnull=True).exists():
+        if AIProblem.objects.filter(_id=display_id, contest_id__isnull=True).exists():
             return self.error("Duplicate display ID")
 
         try:
-            problem = Problem.objects.get(id=data["id"])
-        except Problem.DoesNotExist:
+            problem = AIProblem.objects.get(id=data["id"])
+        except AIProblem.DoesNotExist:
             return self.error("Problem does not exist")
 
         if not problem.contest or problem.is_public:
@@ -474,13 +476,13 @@ class AddContestProblemAPI(APIView):
         data = request.data
         try:
             contest = Contest.objects.get(id=data["contest_id"])
-            problem = Problem.objects.get(id=data["problem_id"])
-        except (Contest.DoesNotExist, Problem.DoesNotExist):
+            problem = AIProblem.objects.get(id=data["problem_id"])
+        except (Contest.DoesNotExist, AIProblem.DoesNotExist):
             return self.error("Contest or Problem does not exist")
 
         if contest.status == ContestStatus.CONTEST_ENDED:
             return self.error("Contest has ended")
-        if Problem.objects.filter(contest=contest, _id=data["display_id"]).exists():
+        if AIProblem.objects.filter(contest=contest, _id=data["display_id"]).exists():
             return self.error("Duplicate display id in this contest")
 
         tags = problem.tags.all()
@@ -529,7 +531,7 @@ class ExportProblemAPI(APIView):
 
     @validate_serializer(ExportProblemRequestSerialzier)
     def get(self, request):
-        problems = Problem.objects.filter(id__in=request.data["problem_id"])
+        problems = AIProblem.objects.filter(id__in=request.data["problem_id"])
         for problem in problems:
             if problem.contest:
                 ensure_created_by(problem.contest, request.user)
@@ -591,7 +593,7 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
                         # process test case
                         _, test_case_id = self.process_zip(tmp_file, spj=spj, dir=f"{i}/testcase/")
 
-                        problem_obj = Problem.objects.create(_id=problem_info["display_id"],
+                        problem_obj = AIProblem.objects.create(_id=problem_info["display_id"],
                                                              title=problem_info["title"],
                                                              description=problem_info["description"]["value"],
                                                              summary_description=problem_info["summary_description"][
@@ -617,11 +619,11 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
                                                              visible=False,
                                                              difficulty=Difficulty.MID,
                                                              total_score=sum(item["score"] for item in test_case_score)
-                                                             if rule_type == ProblemRuleType.OI else 0,
+                                                             if rule_type == AIProblemRuleType.OI else 0,
                                                              test_case_id=test_case_id
                                                              )
                         for tag_name in problem_info["tags"]:
-                            tag_obj, _ = ProblemTag.objects.get_or_create(name=tag_name)
+                            tag_obj, _ = AIProblemTag.objects.get_or_create(name=tag_name)
                             problem_obj.tags.add(tag_obj)
         return self.success({"import_count": count})
 
@@ -630,9 +632,9 @@ class FPSProblemImport(CSRFExemptAPIView):
     request_parsers = ()
 
     def _create_problem(self, problem_data, creator):
-        #if problem_data["time_limit"]["unit"] == "ms":
+        # if problem_data["time_limit"]["unit"] == "ms":
         #    time_limit = problem_data["time_limit"]["value"]
-        #else:
+        # else:
         #    time_limit = problem_data["time_limit"]["value"] * 1000
         template = {}
         prepend = {}
@@ -647,19 +649,19 @@ class FPSProblemImport(CSRFExemptAPIView):
                 our_lang = "Python3"
             template[our_lang] = TEMPLATE_BASE.format(prepend.get(lang, ""), t["code"], append.get(lang, ""))
         spj = problem_data["spj"] is not None
-        Problem.objects.create(_id=f"fps-{rand_str(4)}",
+        AIProblem.objects.create(_id=f"fps-{rand_str(4)}",
                                title=problem_data["title"],
                                description=problem_data["description"],
                                summary_description=problem_data["input"],
                                rule_description=problem_data["output"],
-                               schedule_description=problem_data["schedule"],
+                               schedule_descriptionv=problem_data["schedule"],
                                testhint=problem_data["testhint"],
                                test_case_score=problem_data["test_case_score"],
                                # time_limit=time_limit,
                                memory_limit=problem_data["memory_limit"]["value"],
                                samples=problem_data["samples"],
                                template=template,
-                               rule_type=ProblemRuleType.ACM,
+                               rule_type=AIProblemRuleType.ACM,
                                source=problem_data.get("source", ""),
                                spj=spj,
                                spj_code=problem_data["spj"]["code"] if spj else None,
