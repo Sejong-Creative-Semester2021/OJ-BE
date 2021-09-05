@@ -47,6 +47,7 @@ class AIProblem(models.Model):
     rule_description = RichTextField()
     schedule_description = RichTextField(null=True)
     start_time = models.DateTimeField(null=True)
+    end_time = models.DateTimeField(null=True)
     # [{input: "test", output: "123"}, {input: "test123", output: "456"}]
     samples = JSONField()
     test_case_id = models.TextField()

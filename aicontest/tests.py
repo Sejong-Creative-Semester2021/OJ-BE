@@ -18,7 +18,7 @@ from .views.admin import TestCaseAPI
 from .utils import parse_problem_template
 
 DEFAULT_PROBLEM_DATA = {"_id": "A-110", "title": "test", "description": "<p>test</p>", "summary_description": "test",
-                        "rule_description": "test", "schedule_description": "test", "start_time": "test", "memory_limit": 256, "difficulty": "Low",
+                        "rule_description": "test", "schedule_description": "test", "start_time": "test", "end_time":"test", "memory_limit": 256, "difficulty": "Low",
                         "visible": True, "tags": ["test"], "languages": ["C", "C++", "Java", "Python2"], "template": {},
                         "samples": [{"input": "test", "output": "test"}], "spj": False, "spj_language": "C",
                         "spj_code": "", "spj_compile_ok": True, "test_case_id": "499b26290cc7994e0b497212e842ea85",
@@ -228,6 +228,7 @@ class ContestProblemTest(ProblemCreateTestBase):
         contest_data = copy.deepcopy(DEFAULT_CONTEST_DATA)
         contest_data["password"] = ""
         contest_data["start_time"] = contest_data["start_time"] + timedelta(hours=1)
+        contest_data["end_time"] = contest_data["end_time"] + timedelta(hours=1)
         self.contest = self.client.post(url, data=contest_data).data["data"]
         self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, admin)
         self.problem.contest_id = self.contest["id"]
@@ -255,6 +256,7 @@ class ContestProblemTest(ProblemCreateTestBase):
         self.create_user("test", "test123")
         contest = Contest.objects.first()
         contest.start_time = contest.start_time - timedelta(hours=1)
+        contest.end_time = contest.end_time - timedelta(hours=1)
         contest.save()
         resp = self.client.get(self.url + "?contest_id=" + str(self.contest["id"]))
         self.assertSuccess(resp)
@@ -267,6 +269,7 @@ class AddProblemFromPublicProblemAPITest(ProblemCreateTestBase):
         contest_data = copy.deepcopy(DEFAULT_CONTEST_DATA)
         contest_data["password"] = ""
         contest_data["start_time"] = contest_data["start_time"] + timedelta(hours=1)
+        contest_data["end_time"] = contest_data["end_time"] + timedelta(hours=1)
         self.contest = self.client.post(url, data=contest_data).data["data"]
         self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, admin)
         self.url = self.reverse("add_contest_problem_from_public_api")

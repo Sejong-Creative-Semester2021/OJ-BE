@@ -53,6 +53,7 @@ class CreateOrEditProblemSerializer(serializers.Serializer):
     rule_description = serializers.CharField()
     schedule_description = serializers.CharField()
     start_time = serializers.DateTimeField()
+    end_time = serializers.DateTimeField()
     samples = serializers.ListField(child=CreateSampleSerializer(), allow_empty=False)
     test_case_id = serializers.CharField(max_length=32)
     test_case_score = serializers.ListField(child=CreateTestCaseScoreSerializer(), allow_empty=True)
@@ -150,6 +151,7 @@ class ExportProblemSerializer(serializers.ModelSerializer):
     rule_description = serializers.SerializerMethodField()
     schedule_description = serializers.SerializerMethodField()
     start_time = serializers.DateTimeField()
+    end_time = serializers.DateTimeField()
     test_case_score = serializers.SerializerMethodField()
     testhint = serializers.SerializerMethodField()
     spj = serializers.SerializerMethodField()
@@ -178,6 +180,9 @@ class ExportProblemSerializer(serializers.ModelSerializer):
     def get_start_time(self, obj):
         return obj.start_time
 
+    def get_end_time(self, obj):
+        return obj.end_time
+
     def get_hint(self, obj):
         return self._html_format_value(obj.testhint)
 
@@ -203,7 +208,7 @@ class ExportProblemSerializer(serializers.ModelSerializer):
         model = AIProblem
         fields = ("display_id", "title", "description", "tags",
                   "summary_description", "rule_description", "schedule_description",
-                  "start_time",
+                  "start_time", "end_time",
                   "test_case_score", "testhint", "memory_limit", "samples",
                   "template", "spj", "rule_type", "source", "template")
 
@@ -257,6 +262,7 @@ class ImportProblemSerializer(serializers.Serializer):
     rule_description = FormatValueSerializer()
     schedule_description = FormatValueSerializer()
     start_time = serializers.DateTimeField()
+    end_time = serializers.DateTimeField()
     testhint = FormatValueSerializer()
     test_case_score = serializers.ListField(child=TestCaseScoreSerializer(), allow_null=True)
     # time_limit = serializers.IntegerField(min_value=1, max_value=60000)
