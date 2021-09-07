@@ -42,18 +42,20 @@ class AIProblem(models.Model):
     is_public = models.BooleanField(default=False)
     title = models.TextField()
     # HTML
-    description = RichTextField()
-    summary_description = RichTextField()
+    contest_description = RichTextField()
+    # summary_description = RichTextField()
     rule_description = RichTextField()
     schedule_description = RichTextField(null=True)
     start_time = models.DateTimeField(null=True)
     end_time = models.DateTimeField(null=True)
+    reward_description = RichTextField(null=True)
+    data_description = RichTextField(null=True)
     # [{input: "test", output: "123"}, {input: "test123", output: "456"}]
     samples = JSONField()
     test_case_id = models.TextField()
     # [{"input_name": "1.in", "output_name": "1.out", "score": 0}]
     test_case_score = JSONField()
-    testhint = RichTextField(null=True)
+    hint = RichTextField(null=True)
     languages = JSONField()
     template = JSONField()
     create_time = models.DateTimeField(auto_now_add=True)
