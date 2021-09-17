@@ -54,7 +54,6 @@ LOCAL_APPS = [
     'judge',
     'aicontest',
     'recruit',
-    'judge',
     'faq'
 ]
 

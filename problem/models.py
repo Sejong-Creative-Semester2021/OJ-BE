@@ -59,7 +59,7 @@ class Problem(models.Model):
     last_update_time = models.DateTimeField(null=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     # ms
-    time_limit = models.IntegerField()
+    time_limit = models.IntegerField(null=True)
     # MB
     memory_limit = models.IntegerField()
     # io mode
